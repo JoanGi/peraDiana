@@ -1,11 +1,69 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>My Site</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu Sorpresa</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #fcfcfc; /* Fondo minimalista */
+            font-family: sans-serif;
+        }
+        img {
+            max-width: 90%;
+            max-height: 80vh;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .mensaje { color: #888; font-size: 1.2rem; }
+    </style>
 </head>
 <body>
-  <h1>Hello world</h1>
-  <p>This is my site.</p>
+
+    <div id="contenedor">
+        <img id="imagen-regalo" src="" alt="Cargando sorpresa..." style="display:none;">
+        <p id="texto-espera" class="mensaje" style="display:none;">Aún no es momento de abrir este regalo...</p>
+    </div>
+
+    <script>
+        // 1. CONFIGURACIÓN: Fecha de inicio (Año, Mes-1, Día)
+        // Enero es 0, Febrero es 1... Diciembre es 11.
+        const fechaInicio = new Date(2025, 11, 24); 
+        const hoy = new Date();
+        
+        // 2. Cálculo de días transcurridos
+        const diff = hoy - fechaInicio;
+        const diasPasados = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+        const imgElement = document.getElementById('imagen-regalo');
+        const txtElement = document.getElementById('texto-espera');
+
+      // 3. LÓGICA: Imágenes guardadas en la misma carpeta
+        let urlImagen = "";
+
+        if (diasPasados < 0) {
+            txtElement.style.display = "block"; // Mensaje si aún no empieza el regalo
+        } else {
+            // Cambia los nombres entre comillas por el nombre de tus archivos
+            if (diasPasados < 3) {
+                urlImagen = "diana_fang.jpg";
+            } else if (diasPasados < 6) {
+                urlImagen = "sorpresa_2.jpg";
+            } else if (diasPasados < 9) {
+                urlImagen = "sorpresa_3.jpg";
+            } else {
+                urlImagen = "regalo_final.jpg";
+            }
+
+            // Mostrar la imagen
+            imgElement.src = urlImagen;
+            imgElement.style.display = "block";
+        }
+    </script>
 </body>
 </html>

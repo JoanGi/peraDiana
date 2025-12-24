@@ -74,8 +74,9 @@
         <h1>Benvinguda Diana!</h1>
         <p>Aquest es l'espai del <strong>Turrò Màgic</strong> que et guiarà fina la teva <strong> cita a cegues </strong>.</p> 
         <p>Estàs a punt de començar una sèrie de reptes especials creats només per a tu. Ja m'has tastat? Si? Doncs be, començem!</p>
-        <p> Cada 2 dies, un repte nou desbloquejarà una nova pista en aquest lloc. Recorda! volem descobrir el qui, el que, el quan i el on! </p>
+        <p> Cada 2 dies (el 24, 26, 28, 30, i 2), un repte nou desbloquejarà una nova pista en aquest lloc. Recorda! volem descobrir el qui, el que, el quan i el on! </p>
     </div>
+
     <div id="Dia1Intro">
         <p> Avui es dia de repte! Si aconsegueixes resoldre aquest engima, tindràs una pista de la teva cita o de <strong>la persona que trobaràs</strong>.</p>
     </div>
@@ -87,12 +88,12 @@
     <script type="module">
         // 1. CONFIGURACIÓN: Fecha de inicio (Año, Mes-1, Día)
         // Enero es 0, Febrero es 1... Diciembre es 11.
-        const fechaInicio = new Date(2025, 11, 16); 
+        const fechaInicio = new Date(2025, 11, 20); 
         const hoy = new Date();
         
         // 2. Cálculo de días transcurridos
         const diff = hoy - fechaInicio;
-        const diasPasados = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const diasPasados = Math.floor(diff / (1000 * 60 * 60 * 18));
         console.log(diff);
   
         const imgElement = document.getElementById('imagen-regalo');

@@ -34,12 +34,6 @@ export function validateCheckmate(container) {
     const puzzlePosition = 'r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4';
     game.load(puzzlePosition);
 
-    // Display the board as text
-    const boardDisplay = container.querySelector('#board-display');
-    if (boardDisplay) {
-        boardDisplay.textContent = game.ascii();
-    }
-
     const moveInput = container.querySelector('#userMove');
     const feedback = container.querySelector('#feedback');
     const submitBtn = container.querySelector('#submitBtn');
@@ -181,3 +175,4 @@ export function attachGeoHandler(container) {
 }
 
 // fin de attachGeoHandler
+// función para validar checkmate en el día 4

@@ -1,22 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">    
+    <head>
+    <meta charset="UTF-8">  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+    <!-- Added chessboard CSS so the board is visible -->
+    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+    <title>Per a Diana - Dia 3</title>
+    </head>
+
+<body>
 <div class="sorpresa">
     <h1>Hola Diana</h1>
     <p>Benvinguda al espai cibernètic, que no ciberboina, del Turró Mágic</p>
-    <p>Ja m'has tastat una mica? Benvinguda al dia 3</p>
-
-    <h2>Chess Puzzle: White to Move</h2>
+    <p>Ja m'has tastat una mica? Vols conseguir la tercera pista?</p>
     
-    <div id="board-container">
-        <p><em>Position: White has a Queen on f7, Black King on h8.</em></p>
-        
-    </div>
+    <h3>Abans has de aconseguir guanyar aquesta partida d'escacs!</h3>
+    <p>Mou les peces! Pots demanar ajuda als experts petits de la casa</p>
+
+    <div id="myBoard"></div>
 
     <form id="chessForm">
-        <label for="move">Enter your move (Algebraic Notation):</label><br>
-        <input type="text" id="userMove" placeholder="e.g., Qxf7#" required>
-        <button type="button" onclick="validateCheckmate()">Check Move</button>
-        
-        <p id="feedback"></p>
-        
-        <button type="submit" id="submitBtn" style="display:none;">Submit Form</button>
+        <p id="feedback">Mou una peça per començar...</p>
+        <button type="submit" id="submitBtn" style="display:none;">Submit Completed Form</button>
+        <button type="button" onclick="location.reload()">Reset</button>
     </form>
+        <!-- Hidden congrats image shown on checkmate -->
+    <img id="checkmateImage" src="diana_fang.png" alt="Checkmate!">
 </div>
+</body>
+<script>
+        $(document).ready(function() {
+            // 1. Sanitized FEN (Fixed spacing and removed hidden characters)
+            var fen = 'r2qk2r/pb4pp/1n2Pb2/2B2Q2/p1p5/2P5/2B2PPP/RN2R1K1 w - - 0 1';
+            
+            // 2. Initialize Logic with error checking
+            var game = new Chess();
+            var status = game.load(fen);
+            
+            if (!status) {
+                console.error("Critical Error: FEN is invalid. Logic cannot start.");
+                $('#feedback').text("Error: Puzzle could not load.").css("color", "red");
+                return;
+            }
+
+            var board = null;
+            var $feedback = $('#feedback');
+            var $submitBtn = $('#submitBtn');
+
+        function onDrop(source, target) {
+            // 1. Attempt the move
+            var move = game.move({
+                from: source,
+                to: target,
+                promotion: 'q' 
+            });
+
+            // 2. If move is null, it's illegal
+            if (move === null) return 'snapback';
+
+            // 3. Update visual board immediately
+            board.position(game.fen());
+            
+            // 4. Run the checkmate detection
+            updateStatus();
+
+            // 5. If the game isn't over, Black must respond
+            if (!game.game_over()) {
+                window.setTimeout(makeBlackMove, 400);
+            }
+        }
+
+            function makeBlackMove() {
+                var moves = game.moves();
+                if (moves.length === 0) return;
+
+                // In this puzzle, Black must take the Queen (hxg6)
+                game.move(moves[0]); 
+                board.position(game.fen());
+                updateStatus();
+            }
+
+        function updateStatus() {
+            var status = "";
+            
+            // Check for Checkmate
+            if (game.in_checkmate()) {
+                status = "🎉 CHECKMATE! You solved the puzzle!";
+                $feedback.text(status).css("color", "green");
+                $submitBtn.show(); // Reveal the form submit button
+                $('#checkmateImage').show();
+                return;
+            } 
+
+            // Check for Draw/Stalemate (just in case)
+            if (game.in_draw() || game.in_stalemate()) {
+                status = "Game over: Draw. Try a different path!";
+                $feedback.text(status).css("color", "orange");
+                return;
+            }
+
+            // Check for simple Check
+            if (game.in_check()) {
+                status = "Check! Find the final move to finish the game.";
+                $feedback.text(status).css("color", "blue");
+                 $('#checkmateImage').hide();
+            } else {
+                status = "Move accepted. Look for a checkmate!";
+                $feedback.text(status).css("color", "black");
+                 $('#checkmateImage').hide();
+            }
+        }
+
+            var config = {
+                draggable: true,
+                position: fen,
+                onDrop: onDrop,
+                pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
+            };
+
+            board = Chessboard('myBoard', config);
+            console.log("Game loaded. Valid moves:", game.moves());
+        });
+    </script>

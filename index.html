@@ -6,13 +6,21 @@
     <!-- Leaflet CSS/JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+
     <title>Per a Diana</title>
     <style>
-        .error { color: red; font-weight: bold; }
+         #myBoard { width: 400px; margin: 20px 0;    display: inline-table; }
         .success { color: green; font-weight: bold; }
-        #board-container { margin-bottom: 15px; }
+        .error { color: red; font-weight: bold; }
+        body { font-family: sans-serif; padding: 20px; }
+        #feedback { min-height: 20px; margin-top: 10px; }
+        .board-container .piece {
+            margin-top: 20px;
+        }
+    
         body {
             margin: 0;
             display: flex;
@@ -31,6 +39,15 @@
             box-sizing: border-box;
             text-align: center;
         }
+         /* Image shown when puzzle is solved (checkmate) */
+        #checkmateImage {
+            display: none;
+            max-width: 320px;
+            width: 80%;
+            margin: 12px auto 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+        }
 
         /* Imagen responsiva y centrada */
         img {
@@ -39,20 +56,28 @@
             display: block;
             margin: 0 auto;
             border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            box-shadow: 0 0px 10px rgba(0,0,0,0.08);
         }
 
         .mensaje { color: #666; font-size: 1.1rem; margin-top: 12px; }
 
         /* Asegura que imágenes dentro de bloques .sorpresa respeten el layout */
-        .sorpresa img { max-width: 100%; height: auto; display: block; margin: 12px auto 0; }
+        .sorpresa img { max-width: 100%; height: auto; display: block; margin: 0px auto 0; }
 
         /* mapa dentro del formulario */
         #geo-picker { width: 100%; height: 320px; border-radius:8px; overflow:hidden; margin-top:10px; }
     </style>
 </head>
 <body>
-
+    <div id="Intro">    
+        <h1>Benvinguda Diana!</h1>
+        <p>Aquest es l'espai del<strong>Turrò Màgic</strong> que et guiarà fina la teva <strong> cita a cegues </strong>.</p> 
+        <p>Estàs a punt de començar una sèrie de reptes especials creats només per a tu. Ja m'has tastat? Si? Doncs be, començem!</p>
+        <p> Cada 2 dies, un repte nou desbloquejarà una nova pista en aquest lloc. Recorda! volem descobrir el qui, el que, el quan i el on! </p>
+    </div>
+    <div id="Dia1Intro">
+        <p> Avui es dia del primer repte! Si aconsegueixes resoldre aquest engima, tindràs una pista de ON et vol portar <strong>la persona que vol quedar amb tu</strong>.</p>
+    </div>
     <div id="contenedor">
         <img id="imagen-regalo" src="" alt="Cargando sorpresa..." style="display:none;">
         <p id="texto-espera" class="mensaje" style="display:none;">Encara no és moment d'obrir aquesta la teva sorpresa</p>
@@ -61,7 +86,7 @@
     <script type="module">
         // 1. CONFIGURACIÓN: Fecha de inicio (Año, Mes-1, Día)
         // Enero es 0, Febrero es 1... Diciembre es 11.
-        const fechaInicio = new Date(2025, 11, 20); 
+        const fechaInicio = new Date(2025, 11, 24); 
         const hoy = new Date();
         
         // 2. Cálculo de días transcurridos
@@ -74,7 +99,7 @@
         const contenedor = document.getElementById('contenedor');
 
         // cargar htmlMas1.html como texto (promesa)
-        const htmlHoyPromise = fetch('./htmlMas1.html')
+        const htmlHoyPromise = fetch('./htmlMas2.html')
             .then(response => response.ok ? response.text() : '<div>Error cargando contenido</div>')
             .catch(() => '<div>Error de red</div>');
 
@@ -87,7 +112,7 @@
             .then(response => response.ok ? response.text() : '<div>Error cargando contenido</div>')
             .catch(() => '<div>Error de red</div>');
         // cargar htmlMas5.html como texto
-        const htmlMas4Promise = fetch('./htmlMas4.html')
+        const htmlMas4Promise = fetch('./htmlMas4Ok.html')
             .then(response => response.ok ? response.text() : '<div>Error cargando contenido</div>')
             .catch(() => '<div>Error de red</div>');
         // cargar htmlMas6.html como texto
@@ -95,35 +120,43 @@
             .then(response => response.ok ? response.text() : '<div>Error cargando contenido</div>')
             .catch(() => '<div>Error de red</div>');
 
+        // Helper: insert HTML into container and execute any <script> tags it contains
+        async function executeHtmlWithScripts(container, html) {
+            container.innerHTML = html;
+            const scripts = Array.from(container.querySelectorAll('script'));
+            return Promise.all(scripts.map(old => new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                // copy attributes (type/module/async/etc)
+                Array.from(old.attributes).forEach(a => script.setAttribute(a.name, a.value));
+                if (old.src) {
+                    script.src = old.src;
+                    script.onload = () => resolve();
+                    script.onerror = (e) => reject(e);
+                } else {
+                    script.textContent = old.textContent;
+                    // inline scripts run immediately once inserted
+                    resolve();
+                }
+                old.parentNode.replaceChild(script, old);
+            })));
+        }
+
         // Mostrar según días transcurridos
         if (diasPasados < 0) {
             txtElement.style.display = "block"; // aún no empieza
         } else if (diasPasados === 0) { // dia 24
             // insertar el HTML cargado desde htmlMas1.html
-            htmlHoyPromise.then(html => {
-                contenedor.innerHTML = html;
-                attachQuizHandlerDia1(contenedor);
-            });
+            htmlHoyPromise.then(html => executeHtmlWithScripts(contenedor, html).then(()=> attachQuizHandlerDia1(contenedor)));
         } else if (diasPasados === 2) { // dia 26
-            htmlMas2Promise.then(html => {
-                contenedor.innerHTML = html;
-                // inicializa el widget de mapa dentro del formulario
-                attachGeoHandler(contenedor);
-            });
+            htmlMas2Promise.then(html => executeHtmlWithScripts(contenedor, html).then(()=> attachGeoHandler(contenedor)));
         } else if (diasPasados === 4) { // dia 28
-            htmlMas3Promise.then(html => {
-                contenedor.innerHTML = html;
-                validateCheckmate(contenedor);
-            });
+            const html3 = await htmlMas3Promise;
+            await executeHtmlWithScripts(contenedor, html3);
         } else if (diasPasados === 6) { // dia 30
-            htmlMas4Promise.then(html => {
-                contenedor.innerHTML = html;
-            });
+            htmlMas4Promise.then(html => executeHtmlWithScripts(contenedor, html));
         } 
         else if (diasPasados === 6) { // dia 02
-            htmlMas5Promise.then(html => {
-                contenedor.innerHTML = html;
-            });
+            htmlMas5Promise.then(html => executeHtmlWithScripts(contenedor, html));
         } else {
             txtElement.style.display = "block"; // fuera de rango
         }
@@ -131,7 +164,7 @@
     // importar funciones desde functions.js
     import { attachQuizHandlerDia1 } from './functions.js';
     import { attachGeoHandler } from './functions.js';
-    import { validateCheckmate } from './functions.js';
+
     </script>
 </body>
 </html>

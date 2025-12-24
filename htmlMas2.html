@@ -1,24 +1,108 @@
-<div class="sorpresa">
-    <h1>Hola Diana</h1>
-    <p>Benvinguda al espai cibernètic, que no ciberboina, del Turró Mágic</p>
-    <p>Ja m'has tastat una mica? Aquesta es la teva següent pista</p>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reto: Descubre el lugar en Catalunya</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; background: #fdfdfd; padding: 20px; }
+        .game-container { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 700px; width: 100%; text-align: center; }
+        
+        #map { height: 400px; width: 100%; border-radius: 12px; cursor: crosshair; margin: 20px 0; border: 2px solid #eee; }
 
-    <!-- Formuari de 4 opcions -->
-    <form id="quiz-form" aria-label="Quiz de sorpresa">
-        <p>Escull la resposta correcta:</p>
-        <label><input type="radio" name="opcio" value="A"> Opció A</label><br>
-        <label><input type="radio" name="opcio" value="B"> Opció B</label><br>
-        <label><input type="radio" name="opcio" value="C"> Opció C</label><br>
-        <label><input type="radio" name="opcio" value="D"> Opció D</label><br>
+        .clue-card { background: #fffbe6; padding: 15px; border-left: 5px solid #fadb14; margin-bottom: 20px; border-radius: 4px; }
+        
+        #distance-info { font-size: 1.2rem; margin: 15px 0; min-height: 30px; font-weight: bold; }
+        
+        /* Imagen de Premio Oculta */
+        #prize-container { display: none; margin-top: 20px; animation: slideUp 0.8s ease-out; }
+        #prize-container img { width: 100%; max-width: 450px; border-radius: 10px; border: 6px solid #52c41a; }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-        <!-- mapa per elegir localització -->
-        <div id="geo-picker" aria-label="Mapa per seleccionar ubicació"></div>
-        <!-- lat/lng se rellenan por JS en inputs ocultos -->
-        <button type="submit">Comprovar</button>
-    </form>
+        .success-text { color: #52c41a; font-size: 1.5rem; display: block; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
 
-    <div id="result" aria-live="polite" style="margin-top:12px;color:#333;"></div>
+    <div class="game-container">
+        <h2>📍 El Enigma Geogràfic</h2>
+        
+        <div class="clue-card">
+            <p><strong>Pista:</strong> "Temple inacabado on les pedres somien amb tocar el cel de Barcelona."</p>
+        </div>
 
-    <!-- Imatge premi: oculta fins que la resposta sigui correcta -->
-    <img id="premio-img" src="diana_fang.png" alt="Premi: Diana Fang" style="max-width:100%; height:auto; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.1); display:none;">
-</div>
+        <div id="map"></div>
+
+        <div id="distance-info">Clicka per endevinar...</div>
+
+        <div id="prize-container">
+            <span class="success-text">Increïble! Estàs molt a prop.</span>
+            <img src="https://images.unsplash.com/photo-1583422409516-2895a77efded?q=80&w=600" alt="Sagrada Familia">
+            <p>Has desbloquejat la pista!.</p>
+            <button onclick="alert('Formulari completat')" style="padding: 10px 20px; cursor:pointer;">Enviar resultat</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // 1. Objetivo: Sagrada Família (Barcelona)
+        const target = { lat: 41.4036, lng: 2.1744 };
+        const threshold = 50; // Umbral de 50km para el premio
+
+        // 2. Centrar mapa en Catalunya [lat, lng] y zoom adecuado
+        const map = L.map('map').setView([41.7, 1.8], 8);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        let marker = null;
+        let line = null;
+
+        map.on('click', function(e) {
+            const userPos = e.latlng;
+
+            // Actualizar marcador
+            if (marker) marker.setLatLng(userPos);
+            else marker = L.marker(userPos).addTo(map);
+
+            // Calcular distancia
+            const dist = calculateDistance(userPos.lat, userPos.lng, target.lat, target.lng);
+            
+            const infoDiv = document.getElementById('distance-info');
+            infoDiv.innerText = `Distancia: ${dist.toFixed(1)} km`;
+
+            // Lógica de Premio (Menos de 50km)
+            if (dist <= threshold) {
+                infoDiv.style.color = "#52c41a";
+                document.getElementById('prize-container').style.display = 'block';
+                
+                // Dibujar línea visual al acertar
+                if (line) map.removeLayer(line);
+                line = L.polyline([userPos, [target.lat, target.lng]], {color: '#52c41a', weight: 3, dashArray: '10, 10'}).addTo(map);
+            } else {
+                infoDiv.style.color = "#1890ff";
+                document.getElementById('prize-container').style.display = 'none';
+                if (line) map.removeLayer(line);
+            }
+        });
+
+        // Fórmula Haversine
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2-lat1) * Math.PI / 180;
+            const dLon = (lon2-lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+    </script>
+</body>
+</html>

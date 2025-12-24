@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Visual Chess Puzzle</title>
+    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+    <style>
+        #myBoard { width: 400px; margin: 20px 0; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        body { font-family: sans-serif; padding: 20px; }
+        #feedback { min-height: 20px; margin-top: 10px; }
+
+        /* Image shown when puzzle is solved (checkmate) */
+        #checkmateImage {
+            display: none;
+            max-width: 320px;
+            width: 80%;
+            margin: 12px auto 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Puzzle: White to move and Mate in 2</h2>
+    <p>Drag the pieces to make your move!</p>
+
+    <div id="myBoard"></div>
+
+    <!-- Hidden congrats image shown on checkmate -->
+    <img id="checkmateImage" src="diana_fang.png" alt="Checkmate!">
+
+    <form id="chessForm">
+        <p id="feedback">Move a piece to start...</p>
+        <button type="submit" id="submitBtn" style="display:none;">Submit Completed Form</button>
+        <button type="button" onclick="location.reload()">Reset Puzzle</button>
+    </form>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    // 1. Sanitized FEN (Fixed spacing and removed hidden characters)
+    var fen = 'r2qk2r/pb4pp/1n2Pb2/2B2Q2/p1p5/2P5/2B2PPP/RN2R1K1 w - - 0 1';
+    
+    // 2. Initialize Logic with error checking
+    var game = new Chess();
+    var status = game.load(fen);
+    
+    if (!status) {
+        console.error("Critical Error: FEN is invalid. Logic cannot start.");
+        $('#feedback').text("Error: Puzzle could not load.").css("color", "red");
+        return;
+    }
+
+    var board = null;
+    var $feedback = $('#feedback');
+    var $submitBtn = $('#submitBtn');
+
+function onDrop(source, target) {
+    // 1. Attempt the move
+    var move = game.move({
+        from: source,
+        to: target,
+        promotion: 'q' 
+    });
+
+    // 2. If move is null, it's illegal
+    if (move === null) return 'snapback';
+
+    // 3. Update visual board immediately
+    board.position(game.fen());
+    
+    // 4. Run the checkmate detection
+    updateStatus();
+
+    // 5. If the game isn't over, Black must respond
+    if (!game.game_over()) {
+        window.setTimeout(makeBlackMove, 400);
+    }
+}
+
+    function makeBlackMove() {
+        var moves = game.moves();
+        if (moves.length === 0) return;
+
+        // In this puzzle, Black must take the Queen (hxg6)
+        game.move(moves[0]); 
+        board.position(game.fen());
+        updateStatus();
+    }
+
+   function updateStatus() {
+    var status = "";
+    
+    // Check for Checkmate
+    if (game.in_checkmate()) {
+        status = "🎉 CHECKMATE! You solved the puzzle!";
+        $feedback.text(status).css("color", "green");
+        $submitBtn.show(); // Reveal the form submit button
+        $('#checkmateImage').show(); // show congrats image
+        return;
+    } 
+
+    // Check for Draw/Stalemate (just in case)
+    if (game.in_draw() || game.in_stalemate()) {
+        status = "Game over: Draw. Try a different path!";
+        $feedback.text(status).css("color", "orange");
+        return;
+    }
+
+    // Check for simple Check
+    if (game.in_check()) {
+        status = "Check! Find the final move to finish the game.";
+        $feedback.text(status).css("color", "blue");
+        $('#checkmateImage').hide(); // ensure image hidden if not mate
+    } else {
+        status = "Move accepted. Look for a checkmate!";
+        $feedback.text(status).css("color", "black");
+        $('#checkmateImage').hide(); // ensure image hidden if not mate
+    }
+   }
+
+    var config = {
+        draggable: true,
+        position: fen,
+        onDrop: onDrop,
+        pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
+    };
+
+    board = Chessboard('myBoard', config);
+    console.log("Game loaded. Valid moves:", game.moves());
+});
+</script>
+</body>
+</html>

@@ -87,7 +87,7 @@
     <script type="module">
         // 1. CONFIGURACIÓN: Fecha de inicio (Año, Mes-1, Día)
         // Enero es 0, Febrero es 1... Diciembre es 11.
-        const fechaInicio = new Date(2025, 11, 24); 
+        const fechaInicio = new Date(2025, 11, 22); 
         const hoy = new Date();
         
         // 2. Cálculo de días transcurridos
@@ -150,7 +150,8 @@
             // insertar el HTML cargado desde htmlMas1.html
             htmlHoyPromise.then(html => executeHtmlWithScripts(contenedor, html).then(()=> attachQuizHandlerDia1(contenedor)));
         } else if (diasPasados === 2) { // dia 26
-           
+            document.getElementById('Intro').style.display = "none";
+            document.getElementById('Dia1Intro').style.display = "none";
             htmlMas2Promise.then(html => executeHtmlWithScripts(contenedor, html).then(()=> attachGeoHandler(contenedor)));
         } else if (diasPasados === 4) { // dia 28
             const html3 = await htmlMas3Promise;

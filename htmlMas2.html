@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Reto: Descubre el lugar en Catalunya</title>
+    <title>El turrò magic</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
@@ -34,7 +34,8 @@
         <h2>📍 El Enigma Geogràfic</h2>
         
         <div class="clue-card">
-            <p><strong>Pista:</strong> "Temple inacabado on les pedres somien amb tocar el cel de Barcelona."</p>
+            <p>Si a menys de 5 kilometres es capaç d'acertar. Una pista d'on et portaran es desvelarà</p>
+            <p><strong>Pista:</strong> <em>Entre on tot trontolla i on les fonts son de ferro. Mirant cap al norest esta el cul de la lleona</em></p>
         </div>
 
         <div id="map"></div>
@@ -43,7 +44,7 @@
 
         <div id="prize-container">
             <span class="success-text">Increïble! Estàs molt a prop.</span>
-            <img src="https://images.unsplash.com/photo-1583422409516-2895a77efded?q=80&w=600" alt="Sagrada Familia">
+            <img src="dianaAlMas.png" alt="Mirador Can Pi">
             <p>Has desbloquejat la pista!.</p>
             <button onclick="alert('Formulari completat')" style="padding: 10px 20px; cursor:pointer;">Enviar resultat</button>
         </div>
@@ -52,9 +53,9 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // 1. Objetivo: Sagrada Família (Barcelona)
-        const target = { lat: 41.4036, lng: 2.1744 };
-        const threshold = 50; // Umbral de 50km para el premio
+        // 1. Objetivo: Mirador can pi
+        const target = { lat: 42.000346, lng: 2.850823 };
+        const threshold = 5; // Umbral de 50km para el premio
 
         // 2. Centrar mapa en Catalunya [lat, lng] y zoom adecuado
         const map = L.map('map').setView([41.7, 1.8], 8);

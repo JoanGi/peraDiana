@@ -87,7 +87,7 @@
     <script type="module">
         // 1. CONFIGURACIÓN: Fecha de inicio (Año, Mes-1, Día)
         // Enero es 0, Febrero es 1... Diciembre es 11.
-        const fechaInicio = new Date(2025, 11, 22); 
+        const fechaInicio = new Date(2025, 11, 16); 
         const hoy = new Date();
         
         // 2. Cálculo de días transcurridos
@@ -113,11 +113,11 @@
             .then(response => response.ok ? response.text() : '<div>Error cargando contenido</div>')
             .catch(() => '<div>Error de red</div>');
         // cargar htmlMas5.html como texto
-        const htmlMas4Promise = fetch('./htmlMas4Ok.html')
+        const htmlMas4Promise = fetch('./htmlMas5.html')
             .then(response => response.ok ? response.text() : '<div>Error cargando contenido</div>')
             .catch(() => '<div>Error de red</div>');
         // cargar htmlMas6.html como texto
-        const htmlMas5Promise = fetch('./htmlMas5.html')
+        const htmlMas5Promise = fetch('./htmlMas6.html')
             .then(response => response.ok ? response.text() : '<div>Error cargando contenido</div>')
             .catch(() => '<div>Error de red</div>');
 
@@ -154,12 +154,16 @@
             document.getElementById('Dia1Intro').style.display = "none";
             htmlMas2Promise.then(html => executeHtmlWithScripts(contenedor, html).then(()=> attachGeoHandler(contenedor)));
         } else if (diasPasados === 4) { // dia 28
+            document.getElementById('Intro').style.display = "none";
+            document.getElementById('Dia1Intro').style.display = "none";
             const html3 = await htmlMas3Promise;
             await executeHtmlWithScripts(contenedor, html3);
         } else if (diasPasados === 6) { // dia 30
             htmlMas4Promise.then(html => executeHtmlWithScripts(contenedor, html));
         } 
-        else if (diasPasados === 6) { // dia 02
+        else if (diasPasados === 8) { // dia 02
+                document.getElementById('Intro').style.display = "none";
+            document.getElementById('Dia1Intro').style.display = "none";
             htmlMas5Promise.then(html => executeHtmlWithScripts(contenedor, html));
         } else {
             txtElement.style.display = "block"; // fuera de rango
@@ -167,7 +171,7 @@
 
     // importar funciones desde functions.js
     import { attachQuizHandlerDia1 } from './functions.js';
-    import { attachGeoHandler } from './functions.js';
+
 
     </script>
 </body>

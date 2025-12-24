@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <title>Sudoku 6x6 - Repte Avançat</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #fdfdfd; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); text-align: center; }
+        
+        #sudoku-grid { 
+            display: grid; 
+            grid-template-columns: repeat(6, 50px); 
+            grid-template-rows: repeat(6, 50px); 
+            gap: 1px; 
+            margin: 20px auto;
+            background: #333; 
+            border: 3px solid #333;
+            width: fit-content;
+        }
+
+        .cell {
+            width: 50px; height: 50px;
+            background: white;
+            text-align: center; font-size: 1.4rem;
+            font-weight: bold;
+            display: flex; 
+            align-items: center;
+            justify-content: center;
+            border: none;
+            outline: none;
+            box-sizing: border-box;
+            margin: 0; padding: 0;
+        }
+
+        /* Marquem els blocs de 2x3 amb bordes més gruixuts */
+        /* Bordes verticals cada 3 columnes */
+        .cell:nth-child(3n) { border-right: 2px solid #333; }
+        .cell:nth-child(6n) { border-right: none; }
+
+        /* Bordes horitzontals cada 2 files */
+        #sudoku-grid div:nth-child(n+13):nth-child(-n+18),
+        #sudoku-grid div:nth-child(n+25):nth-child(-n+30) {
+            border-bottom: 3px solid #333;
+        }
+
+        input.cell { color: #1890ff; cursor: pointer; }
+        .readonly { background: #f0f0f0; color: #333; cursor: default; }
+        input.cell:focus { background: #fffbe6; }
+
+        #status { margin-bottom: 15px; font-weight: bold; color: #555; font-size: 1.1rem; }
+        #prize-box { display: none; margin-top: 25px; animation: slideDown 0.6s ease; }
+        #prize-box img { width: 100%; max-width: 450px; border-radius: 10px; border: 4px solid #1890ff; }
+        
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1> Un nou repte</h1>
+    <p> Tota cita a cegues requereix paciència. Estas preparada? Posa a prova la paciència amb aquest Sudoku y tindrás una pista nova</p>
+    <h2>🧩 Sudoku 6x6</h2>
+    <p>Completa la graella sense repetir números (1-6) en files, columnes o blocs de 2x3.</p>
+    
+    <div id="sudoku-grid"></div>
+    <div id="status">Buscant la solució...</div>
+
+    <div id="prize-box">
+        <h3 style="color: #1890ff;">🌟 ¡EXCEL·LENT! Sudoku completat.</h3>
+        <img src="muntañaw.jpg" alt="Paisatge de fons">
+        <p>A continuació tens la actitud i el codi de vestimenta apropiada per la cita.</p>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // 0 = buit. Aquest puzzle té una solució única.
+    const puzzle = [
+        1, 0, 0, 4, 0, 0,
+        0, 0, 5, 0, 1, 0,
+        3, 0, 0, 0, 0, 5,
+        2, 0, 0, 0, 0, 1,
+        0, 1, 0, 3, 0, 0,
+        0, 0, 6, 0, 0, 2
+    ];
+
+    const solution = [
+        1, 5, 2, 4, 6, 3,
+        6, 4, 5, 2, 1, 3, // Nota: Hi ha un petit canvi en la lògica del bloc aquí
+        3, 2, 1, 6, 4, 5,
+        2, 6, 4, 5, 3, 1,
+        5, 1, 2, 3, 6, 4,
+        4, 3, 6, 1, 5, 2
+    ];
+    
+    // Per seguretat en aquest exemple, farem servir una solució fixa més senzilla de validar:
+    const finalSolution = [
+        1,2,3,4,5,6,
+        4,5,6,1,2,3,
+        2,3,1,5,6,4,
+        5,6,4,2,3,1,
+        3,1,2,6,4,5,
+        6,4,5,3,1,2
+    ];
+
+    const grid = $('#sudoku-grid');
+
+    // Netegem i generem
+    puzzle.forEach((num, i) => {
+        // Usem la finalSolution per posar els números inicials de forma coherent
+        let initialNum = (puzzle[i] !== 0) ? finalSolution[i] : 0;
+        
+        if (initialNum !== 0) {
+            grid.append(`<div class="cell readonly">${initialNum}</div>`);
+        } else {
+            grid.append(`<input type="text" class="cell" maxlength="1" data-index="${i}">`);
+        }
+    });
+
+    $('.cell').on('input', function() {
+        this.value = this.value.replace(/[^1-6]/g, '');
+        validar();
+    });
+
+    function validar() {
+        let actual = [];
+        let ple = true;
+
+        $('.cell').each(function() {
+            let v = $(this).is('input') ? $(this).val() : $(this).text();
+            if (v === "") ple = false;
+            actual.push(parseInt(v));
+        });
+
+        if (ple) {
+            const correcte = actual.every((val, idx) => val === finalSolution[idx]);
+            if (correcte) {
+                $('#status').text("¡BRUTAL! Ho has aconseguit.").css("color", "#52c41a");
+                $('.cell').prop('disabled', true);
+                $('#prize-box').fadeIn();
+            } else {
+                $('#status').text("Alguna cosa no quadra... Revisa els blocs.").css("color", "#ff4d4f");
+            }
+        }
+    }
+});
+</script>
+
+</body>
+</html>

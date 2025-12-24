@@ -22,11 +22,12 @@
         }
     
         body {
-            margin: 0;
+            
+    margin-top: 90px;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+    
             /* Fondo suave con ligero degradado */
             background: linear-gradient(180deg, #f7fbff 0%, #fcfcfc 60%);
             font-family: sans-serif;
@@ -76,7 +77,7 @@
         <p> Cada 2 dies, un repte nou desbloquejarà una nova pista en aquest lloc. Recorda! volem descobrir el qui, el que, el quan i el on! </p>
     </div>
     <div id="Dia1Intro">
-        <p> Avui es dia del primer repte! Si aconsegueixes resoldre aquest engima, tindràs una pista de ON et vol portar <strong>la persona que vol quedar amb tu</strong>.</p>
+        <p> Avui es dia de repte! Si aconsegueixes resoldre aquest engima, tindràs una pista de la teva cita o de <strong>la persona que trobaràs</strong>.</p>
     </div>
     <div id="contenedor">
         <img id="imagen-regalo" src="" alt="Cargando sorpresa..." style="display:none;">
@@ -104,11 +105,11 @@
             .catch(() => '<div>Error de red</div>');
 
         // cargar htmlMas2.html como texto
-        const htmlMas2Promise = fetch('./htmlMas2.html')
+        const htmlMas2Promise = fetch('./htmlMas3.html')
             .then(response => response.ok ? response.text() : '<div>Error cargando contenido</div>')
             .catch(() => '<div>Error de red</div>');
         // cargar htmlMas4.html como texto
-        const htmlMas3Promise = fetch('./htmlMas3.html')
+        const htmlMas3Promise = fetch('./htmlMas4Ok.html')
             .then(response => response.ok ? response.text() : '<div>Error cargando contenido</div>')
             .catch(() => '<div>Error de red</div>');
         // cargar htmlMas5.html como texto
@@ -143,11 +144,13 @@
 
         // Mostrar según días transcurridos
         if (diasPasados < 0) {
+           
             txtElement.style.display = "block"; // aún no empieza
         } else if (diasPasados === 0) { // dia 24
             // insertar el HTML cargado desde htmlMas1.html
             htmlHoyPromise.then(html => executeHtmlWithScripts(contenedor, html).then(()=> attachQuizHandlerDia1(contenedor)));
         } else if (diasPasados === 2) { // dia 26
+           
             htmlMas2Promise.then(html => executeHtmlWithScripts(contenedor, html).then(()=> attachGeoHandler(contenedor)));
         } else if (diasPasados === 4) { // dia 28
             const html3 = await htmlMas3Promise;

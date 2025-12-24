@@ -1,0 +1,24 @@
+<div class="sorpresa">
+    <h1>Hola Diana</h1>
+    <p>Benvinguda al espai cibernètic, que no ciberboina, del Turró Mágic</p>
+    <p>Ja m'has tastat una mica? Benvinguda al dia 3</p>
+
+    <h2>Chess Puzzle: White to Move</h2>
+    
+    <div id="board-container">
+        <p><em>Position: White has a Queen on f7, Black King on h8.</em></p>
+        
+    </div>
+
+    <pre id="board-display"></pre>
+
+    <form id="chessForm">
+        <label for="move">Enter your move (Algebraic Notation):</label><br>
+        <input type="text" id="userMove" placeholder="e.g., Qxf7#" required>
+        <button type="button" onclick="validateCheckmate()">Check Move</button>
+        
+        <p id="feedback"></p>
+        
+        <button type="submit" id="submitBtn" style="display:none;">Submit Form</button>
+    </form>
+</div>

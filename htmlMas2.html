@@ -1,0 +1,24 @@
+<div class="sorpresa">
+    <h1>Hola Diana</h1>
+    <p>Benvinguda al espai cibernètic, que no ciberboina, del Turró Mágic</p>
+    <p>Ja m'has tastat una mica? Aquesta es la teva següent pista</p>
+
+    <!-- Formuari de 4 opcions -->
+    <form id="quiz-form" aria-label="Quiz de sorpresa">
+        <p>Escull la resposta correcta:</p>
+        <label><input type="radio" name="opcio" value="A"> Opció A</label><br>
+        <label><input type="radio" name="opcio" value="B"> Opció B</label><br>
+        <label><input type="radio" name="opcio" value="C"> Opció C</label><br>
+        <label><input type="radio" name="opcio" value="D"> Opció D</label><br>
+
+        <!-- mapa per elegir localització -->
+        <div id="geo-picker" aria-label="Mapa per seleccionar ubicació"></div>
+        <!-- lat/lng se rellenan por JS en inputs ocultos -->
+        <button type="submit">Comprovar</button>
+    </form>
+
+    <div id="result" aria-live="polite" style="margin-top:12px;color:#333;"></div>
+
+    <!-- Imatge premi: oculta fins que la resposta sigui correcta -->
+    <img id="premio-img" src="diana_fang.png" alt="Premi: Diana Fang" style="max-width:100%; height:auto; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.1); display:none;">
+</div>

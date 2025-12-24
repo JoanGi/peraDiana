@@ -3,34 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tu Sorpresa</title>
+    <!-- Leaflet CSS/JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+    <title>Per a Diana</title>
     <style>
+        .error { color: red; font-weight: bold; }
+        .success { color: green; font-weight: bold; }
+        #board-container { margin-bottom: 15px; }
         body {
             margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #fcfcfc; /* Fondo minimalista */
+            /* Fondo suave con ligero degradado */
+            background: linear-gradient(180deg, #f7fbff 0%, #fcfcfc 60%);
             font-family: sans-serif;
         }
-        img {
-            max-width: 90%;
-            max-height: 80vh;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        /* Contenedor centrado y con ancho máximo */
+        #contenedor {
+            width: 100%;
+            max-width: 720px;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
         }
-        .mensaje { color: #888; font-size: 1.2rem; }
+
+        /* Imagen responsiva y centrada */
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+
+        .mensaje { color: #666; font-size: 1.1rem; margin-top: 12px; }
+
+        /* Asegura que imágenes dentro de bloques .sorpresa respeten el layout */
+        .sorpresa img { max-width: 100%; height: auto; display: block; margin: 12px auto 0; }
+
+        /* mapa dentro del formulario */
+        #geo-picker { width: 100%; height: 320px; border-radius:8px; overflow:hidden; margin-top:10px; }
     </style>
 </head>
 <body>
 
     <div id="contenedor">
         <img id="imagen-regalo" src="" alt="Cargando sorpresa..." style="display:none;">
-        <p id="texto-espera" class="mensaje" style="display:none;">Encara no és moment d'obrir aquesta capsa</p>
+        <p id="texto-espera" class="mensaje" style="display:none;">Encara no és moment d'obrir aquesta la teva sorpresa</p>
     </div>
 
-    <script>
+    <script type="module">
         // 1. CONFIGURACIÓN: Fecha de inicio (Año, Mes-1, Día)
         // Enero es 0, Febrero es 1... Diciembre es 11.
         const fechaInicio = new Date(2025, 11, 20); 
@@ -39,31 +67,72 @@
         // 2. Cálculo de días transcurridos
         const diff = hoy - fechaInicio;
         const diasPasados = Math.floor(diff / (1000 * 60 * 60 * 24));
-
+        console.log(diff);
+  
         const imgElement = document.getElementById('imagen-regalo');
         const txtElement = document.getElementById('texto-espera');
+        const contenedor = document.getElementById('contenedor');
 
-      // 3. LÓGICA: Imágenes guardadas en la misma carpeta
-        let urlImagen = "";
+        // cargar htmlMas1.html como texto (promesa)
+        const htmlHoyPromise = fetch('./htmlMas1.html')
+            .then(response => response.ok ? response.text() : '<div>Error cargando contenido</div>')
+            .catch(() => '<div>Error de red</div>');
 
+        // cargar htmlMas2.html como texto
+        const htmlMas2Promise = fetch('./htmlMas2.html')
+            .then(response => response.ok ? response.text() : '<div>Error cargando contenido</div>')
+            .catch(() => '<div>Error de red</div>');
+        // cargar htmlMas4.html como texto
+        const htmlMas3Promise = fetch('./htmlMas3.html')
+            .then(response => response.ok ? response.text() : '<div>Error cargando contenido</div>')
+            .catch(() => '<div>Error de red</div>');
+        // cargar htmlMas5.html como texto
+        const htmlMas4Promise = fetch('./htmlMas4.html')
+            .then(response => response.ok ? response.text() : '<div>Error cargando contenido</div>')
+            .catch(() => '<div>Error de red</div>');
+        // cargar htmlMas6.html como texto
+        const htmlMas5Promise = fetch('./htmlMas5.html')
+            .then(response => response.ok ? response.text() : '<div>Error cargando contenido</div>')
+            .catch(() => '<div>Error de red</div>');
+
+        // Mostrar según días transcurridos
         if (diasPasados < 0) {
-            txtElement.style.display = "block"; // Mensaje si aún no empieza el regalo
+            txtElement.style.display = "block"; // aún no empieza
+        } else if (diasPasados === 0) { // dia 24
+            // insertar el HTML cargado desde htmlMas1.html
+            htmlHoyPromise.then(html => {
+                contenedor.innerHTML = html;
+                attachQuizHandlerDia1(contenedor);
+            });
+        } else if (diasPasados === 2) { // dia 26
+            htmlMas2Promise.then(html => {
+                contenedor.innerHTML = html;
+                // inicializa el widget de mapa dentro del formulario
+                attachGeoHandler(contenedor);
+            });
+        } else if (diasPasados === 4) { // dia 28
+            htmlMas3Promise.then(html => {
+                contenedor.innerHTML = html;
+                validateCheckmate(contenedor);
+            });
+        } else if (diasPasados === 6) { // dia 30
+            htmlMas4Promise.then(html => {
+                contenedor.innerHTML = html;
+            });
+        } 
+        else if (diasPasados === 6) { // dia 02
+            htmlMas5Promise.then(html => {
+                contenedor.innerHTML = html;
+            });
         } else {
-            // Cambia los nombres entre comillas por el nombre de tus archivos
-            if (diasPasados < 3) {
-                urlImagen = "diana_fang.jpg";
-            } else if (diasPasados < 6) {
-                urlImagen = "sorpresa_2.jpg";
-            } else if (diasPasados < 9) {
-                urlImagen = "sorpresa_3.jpg";
-            } else {
-                urlImagen = "regalo_final.jpg";
-            }
-
-            // Mostrar la imagen
-            imgElement.src = urlImagen;
-            imgElement.style.display = "block";
+            txtElement.style.display = "block"; // fuera de rango
         }
+
+    // importar funciones desde functions.js
+    import { attachQuizHandlerDia1 } from './functions.js';
+    import { attachGeoHandler } from './functions.js';
+    import { validateCheckmate } from './functions.js';
     </script>
 </body>
 </html>
+
